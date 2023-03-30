@@ -27,6 +27,7 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
+#include <iostream>
 
 // Local includes
 #include <mocap_optitrack/socket.h>
@@ -175,6 +176,7 @@ private:
 ////////////////////////////////////////////////////////////////////////
 int main(int argc, char* argv[])
 {
+  // std::cout << "SADLIFJHASLDFJKNASLDKFJNASLDKFJNASLDKFJNASDLÒKFJNASDLKFJNASDÒKFJN\n\n\n\n\nlaishdfasljdhfbasljdhasldfhasldfh";
   // Initialize ROS node
   ros::init(argc, argv, "mocap_node");
   ros::NodeHandle nh("~");

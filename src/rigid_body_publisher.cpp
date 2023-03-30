@@ -27,13 +27,14 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
+#include <iostream>
+
 #include <mocap_optitrack/rigid_body_publisher.h>
 
 #include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/Pose2D.h>
 #include <nav_msgs/Odometry.h>
 #include <vector>
-
 namespace mocap_optitrack
 {
 
@@ -124,6 +125,24 @@ RigidBodyPublisher::~RigidBodyPublisher()
 {
 }
 
+geometry_msgs::PoseStamped RigidBodyPublisher::getOldPoseStampedMsg(){
+  return oldPoseStampedMsg;
+}
+
+void RigidBodyPublisher::setOldPoseStampedMsg(nav_msgs::Odometry oldPoseStampedMsgInput){
+  
+  oldPoseStampedMsg.pose = oldPoseStampedMsgInput.pose.pose;
+  oldPoseStampedMsg.header = oldPoseStampedMsgInput.header;
+}
+
+bool RigidBodyPublisher::getHasPreviousMessage(){
+  return hasPreviousMessage;
+}
+
+void RigidBodyPublisher::setHasPreviousMessage(bool newValue){
+  hasPreviousMessage = newValue;
+}
+
 void RigidBodyPublisher::publish(ros::Time const& time, RigidBody const& body)
 {
   // don't do anything if no new data was provided
@@ -159,14 +178,53 @@ void RigidBodyPublisher::publish(ros::Time const& time, RigidBody const& body)
   {
     odom.header.frame_id = config.parentFrameId;
     odom.child_frame_id = config.childFrameId;
+
+    if(RigidBodyPublisher::getHasPreviousMessage() == false){ // questo è il primo messaggio di posa
+      RigidBodyPublisher::setOldPoseStampedMsg(odom);
+      RigidBodyPublisher::setHasPreviousMessage(true);
+      // std::cout << "\nnECCOMI\nnECCOMI\n\nECCOMI\nnECCOMI\nnECCOMI\nnECCOMI\n";
+      firstMessageTimestamp = odom.header.stamp;
+    } else {
+      messageInASec++;
+      // std::cout<< "N. Message in a sec ( " <<odom.header.stamp.toSec() -firstMessageTimestamp.toSec()<<") = " << messageInASec<<"\n";
+      if (odom.header.stamp.toSec() -firstMessageTimestamp.toSec() >1 ){
+        // std::cout<< "N. Message in a sec ( " <<odom.header.stamp.toSec() -firstMessageTimestamp.toSec()<<") = " << messageInASec<<"\n";
+        messageInASec =0;
+        firstMessageTimestamp=odom.header.stamp;
+      }
+      
+      // compute velocity
+      // int64_t dt_sec = ((odom.header.stamp.sec*1e9 + odom.header.stamp.nsec) - (RigidBodyPublisher::getOldPoseStampedMsg().header.stamp.sec*1e9 +RigidBodyPublisher::getOldPoseStampedMsg().header.stamp.nsec))*1e9;
+      // std::cout << odom.header.stamp.toNSec() << "\n" << odom.header.stamp <<"\n --- \n";
+      // double dt_sec = (odom.header.stamp.toSec() - RigidBodyPublisher::getOldPoseStampedMsg().header.stamp.toSec());
+      // std::cout << "dt_sec = " << dt_sec<< "\n";
+      // std::cout << "1/dt_sec = " << 1/dt_sec<< "\n";
+      // ros::Time elapsed_time = odom.header.stamp.toSec() - RigidBodyPublisher::getOldPoseStampedMsg().header.stamp.toSec();
+      // compute linear velocity
+      //std::cout << "NEW " << odom.header.stamp.toNSec() << "\n";
+      //std::cout << "OLD " << RigidBodyPublisher::getOldPoseStampedMsg().header.stamp.toNSec() << "\n";
+      //std::cout << "DIFF " << odom.header.stamp.toNSec()-RigidBodyPublisher::getOldPoseStampedMsg().header.stamp.toNSec() << "\n\n";
+      double dt_sec = 0.008333333;
+      odom.twist.twist.linear.x = (odom.pose.pose.position.x- RigidBodyPublisher::getOldPoseStampedMsg().pose.position.x)/dt_sec;
+      std::cout << "odom.twist.twist.linear.x: " << odom.twist.twist.linear.x << "\n";
+      odom.twist.twist.linear.y = (odom.pose.pose.position.y- RigidBodyPublisher::getOldPoseStampedMsg().pose.position.y)/dt_sec;
+      odom.twist.twist.linear.z = (odom.pose.pose.position.z- RigidBodyPublisher::getOldPoseStampedMsg().pose.position.z)/dt_sec;
+      // compute angular velocity
+      odom.twist.twist.angular.x = (odom.pose.pose.orientation.x- RigidBodyPublisher::getOldPoseStampedMsg().pose.orientation.x)/dt_sec;
+      odom.twist.twist.angular.y = (odom.pose.pose.orientation.y- RigidBodyPublisher::getOldPoseStampedMsg().pose.orientation.y)/dt_sec;
+      odom.twist.twist.angular.z = (odom.pose.pose.orientation.z- RigidBodyPublisher::getOldPoseStampedMsg().pose.orientation.z)/dt_sec;
+      RigidBodyPublisher::setOldPoseStampedMsg(odom);
+    }
+
     odomPublisher.publish(odom);
   }
-  if (config.publishOdom)
-  {
-    odom.header.frame_id = config.parentFrameId;
-    odom.child_frame_id = config.childFrameId;
-    odomPublisher.publish(odom);
-  }
+  // if (config.publishOdom)
+  // {
+  //   odom.header.frame_id = config.parentFrameId;
+  //   odom.child_frame_id = config.childFrameId;
+  //   odomPublisher.publish(odom);
+  // }
+
   // publish 2D pose
   if (config.publishPose2d)
   {

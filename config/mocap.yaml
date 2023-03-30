@@ -3,22 +3,43 @@
 # Identifier corresponds to Trackable ID set in Tracking Tools
 #
 rigid_bodies:
-    '1':
-        pose: Robot_1/pose
-        pose2d: Robot_1/ground_pose
-        odom: Robot_1/Odom
+    "3":
+        pose: Robot_3/pose
+        pose2d: Robot_3/ground_pose
+        odom: Robot_3/Odom
         tf: tf
-        child_frame_id: Robot_1/base_link
+        child_frame_id: Robot_3
         parent_frame_id: world
-    '2':
-        pose: Robot_2/pose
-        pose2d: Robot_2/ground_pose
-        odom: Robot_2/Odom
+    "4":
+        pose: Robot_4/pose
+        pose2d: Robot_4/ground_pose
+        odom: Robot_4/Odom
         tf: tf
-        child_frame_id: Robot_2/base_link
+        child_frame_id: Robot_4
         parent_frame_id: world
+    "5":
+        pose: Robot_5/pose
+        pose2d: Robot_5/ground_pose
+        odom: Robot_5/Odom
+        tf: tf
+        child_frame_id: Robot_5
+        parent_frame_id: world
+    "6":
+        pose: Robot_6/pose
+        pose2d: Robot_6/ground_pose
+        odom: Robot_6/Odom
+        tf: tf
+        child_frame_id: Robot_6
+        parent_frame_id: world
+#    "8":
+#        pose: target/pose
+#        pose2d: target/ground_pose
+#        odom: target/Odom
+#        tf: tf
+#        child_frame_id: target
+#        parent_frame_id: world
 optitrack_config:
-        multicast_address: 224.0.0.1
-        command_port: 1510
-        data_port: 9000
-        enable_optitrack: true
+    multicast_address: 239.255.42.99
+    command_port: 1510
+    data_port: 9000
+    enable_optitrack: true

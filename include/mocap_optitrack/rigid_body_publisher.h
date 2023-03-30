@@ -39,6 +39,7 @@
 #include <mocap_optitrack/version.h>
 #include <mocap_optitrack/data_model.h>
 #include <mocap_optitrack/mocap_config.h>
+#include <nav_msgs/Odometry.h>
 
 namespace mocap_optitrack
 {
@@ -52,6 +53,12 @@ public:
                      PublisherConfiguration const& config);
   ~RigidBodyPublisher();
   void publish(ros::Time const& time, RigidBody const&);
+  geometry_msgs::PoseStamped getOldPoseStampedMsg();
+  void setOldPoseStampedMsg(nav_msgs::Odometry oldPoseStampedMsg);
+  bool getHasPreviousMessage();
+  void setHasPreviousMessage(bool newValue);
+  int64_t messageInASec=0;
+  ros::Time firstMessageTimestamp;
 
 private:
   PublisherConfiguration config;
@@ -62,6 +69,8 @@ private:
   ros::Publisher posePublisher;
   ros::Publisher pose2dPublisher;
   ros::Publisher odomPublisher;
+  geometry_msgs::PoseStamped oldPoseStampedMsg;
+  bool hasPreviousMessage = false;
 };
 
 /// \brief Dispatches RigidBody data to the correct publisher.
